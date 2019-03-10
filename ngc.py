@@ -5,6 +5,20 @@ K = 10 # internal layer
 epsilon = 0.01
 MaxItr = 10
 
+path = 'Train_data_cleaned-2.0.1.csv'
+df = pd.get_dummies(pd.read_csv(path)).values
+N, D = df.shape
+D -= 2
+X = df[:, 0:D]
+Y = df[:, D:]
+print(X.shape)
+print(X[:5, :])
+print(Y.shape)
+print(Y[:5, :])
+
+
+'''
+
 path = 'Train_data_cleaned-2.0.2.csv'
 
 df = pd.read_csv(path)
@@ -20,10 +34,15 @@ Y_train = Y[0:num]
 X_val = X[num:, :]
 Y_val = Y[num:]
 
+print(X_train.shape)
+print(X_train[:5, :])
+print(Y_train.shape)
+print(Y_train[:5])
+'''
 def train(X, Y, MaxItr):
 	N, D = X.shape
-	W = np.random.random_sample((D, K))
-	v = np.random.random_sample(K)
+	W = np.random.random_sample((D, K)) * 2 - 1
+	v = np.random.random_sample(K) * 2 - 1
 	for i in range(MaxItr):
 		G = np.zeros((D, K))
 		g = np.zeros(K)
@@ -52,9 +71,9 @@ def test(X, Y, W, v):
 	print(Y.shape)
 	return
 
-W, v = train(X_train, Y_train, MaxItr)
-print(W.shape)
-print(v.shape)
-print(X_val.shape)
-print("---------")
-test(X_val, Y_val, W, v)
+#W, v = train(X_train, Y_train, MaxItr)
+#print(W.shape)
+#print(v.shape)
+#print(X_val.shape)
+#print("---------")
+#test(X_val, Y_val, W, v)
