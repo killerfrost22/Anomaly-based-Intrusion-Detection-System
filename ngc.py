@@ -1,8 +1,24 @@
 import numpy as np
+import pandas as pd
 
-K = 5 # internal layer
+K = 10 # internal layer
 epsilon = 0.01
-MaxItr = 100
+MaxItr = 10
+
+path = 'Train_data_cleaned-2.0.2.csv'
+
+df = pd.read_csv(path)
+Y = df.values[:, -1]
+df = df.drop(columns=['class'])
+data = pd.get_dummies(df)
+X = data.values
+
+N, D = X.shape
+num = int(N * 0.8)
+X_train = X[0:num, :]
+Y_train = Y[0:num]
+X_val = X[num:, :]
+Y_val = Y[num:]
 
 def train(X, Y, MaxItr):
 	N, D = X.shape
@@ -26,6 +42,19 @@ def train(X, Y, MaxItr):
 		v = v - epsilon * g
 	return W, v
 
-W, v = train(X, Y, MaxItr)
-print(W)
-print(v)
+def test(X, Y, W, v):
+	res = np.matmul(np.tanh(np.matmul(X, W)), v)
+	print(res.shape)
+	print(res)
+	print('--------')
+	print(np.amax(res))
+	print(np.amin(res))
+	print(Y.shape)
+	return
+
+W, v = train(X_train, Y_train, MaxItr)
+print(W.shape)
+print(v.shape)
+print(X_val.shape)
+print("---------")
+test(X_val, Y_val, W, v)
