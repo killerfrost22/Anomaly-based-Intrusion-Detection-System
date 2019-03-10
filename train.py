@@ -7,6 +7,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 #img_h = img_w = 28             # MNIST images are 28x28
 #img_size_flat = img_h * img_w  # 28x28=784, the total number of pixels
 n_classes = 2                 # Number of classes, one class per digit
+n_feature = 40
 
 def load_data():
     """
@@ -18,11 +19,11 @@ def load_data():
     N, D = df.shape
     N = int(N * 0.8)
     D -= 2
-    x_train = df[0:N, 0:D]
-    y_train = df[0:N, D:]
-    x_valid = df[N:, 0:D]
-    y_valid = df[N:, D:]
-    return x_train, y_train, x_valid, y_valid
+    X = df[0:N, 0:D]
+    Y = df[0:N, D:]
+    x_test = df[N:, 0:D]
+    y_test = df[N:, D:]
+    return X, Y, x_test, y_test
 
 def randomize(x, y):
     """ Randomizes the order of data samples and their corresponding labels"""
@@ -37,7 +38,8 @@ def get_next_batch(x, y, start, end):
     return x_batch, y_batch
 
 # Load MNIST data
-x_train, y_train, x_valid, y_valid = load_data()
+X, Y, x_test, y_test = load_data()
+"""
 print("Size of:")
 print("- Training-set:\t\t{}".format(len(y_train)))
 print("- Validation-set:\t{}".format(len(y_valid)))
@@ -48,6 +50,7 @@ print('x_train:\t{}'.format(x_valid.shape))
 print('y_valid:\t{}'.format(y_valid.shape))
 
 y_valid[:5, :]
+"""
 
 # Hyper-parameters
 epochs = 100             # Total number of training epochs
@@ -55,7 +58,7 @@ batch_size = 100        # Training batch size
 display_freq = 50      # Frequency of displaying the training results
 learning_rate = 0.001   # The optimization initial learning rate
 
-h1 = 20                # Number of units in the first hidden layer
+h1 = 200                # Number of units in the first hidden layer
 
 # weight and bais wrappers
 def weight_variable(name, shape):
@@ -102,7 +105,7 @@ def fc_layer(x, num_units, name):
 
 # Create the graph for the linear model
 # Placeholders for inputs (x) and outputs(y)
-x = tf.placeholder(tf.float32, shape=[None, 40], name='X')
+x = tf.placeholder(tf.float32, shape=[None, n_feature], name='X')
 y = tf.placeholder(tf.float32, shape=[None, n_classes], name='Y')
 
 fc1 = fc_layer(x, h1, 'FC1')
@@ -124,10 +127,15 @@ sess = tf.InteractiveSession()
 sess.run(init)
 global_step = 0
 # Number of training iterations in each epoch
-num_tr_iter = int(len(y_train) / batch_size)
+num_tr_iter = int(len(Y) / batch_size)
 for epoch in range(epochs):
     print('Training epoch: {}'.format(epoch + 1))
-    x_train, y_train = randomize(x_train, y_train)
+    X, Y = randomize(X, Y)
+    num = int(len(Y) * 0.8)
+    x_train = X[0:num, :]
+    y_train = Y[0:num, :]
+    x_valid = X[num:, :]
+    y_valid = Y[num:, :]
     for iteration in range(num_tr_iter):
         global_step += 1
         start = iteration * batch_size
@@ -147,9 +155,15 @@ for epoch in range(epochs):
                   format(iteration, loss_batch, acc_batch))
 
     # Run validation after every epoch
-    feed_dict_valid = {x: x_valid[:4500], y: y_valid[:4500]}
+    feed_dict_valid = {x: x_valid, y: y_valid}
     loss_valid, acc_valid = sess.run([loss, accuracy], feed_dict=feed_dict_valid)
     print('---------------------------------------------------------')
     print("Epoch: {0}, validation loss: {1:.2f}, validation accuracy: {2:.01%}".
           format(epoch + 1, loss_valid, acc_valid))
     print('---------------------------------------------------------')
+
+feed_dict_test = {x: x_test, y: y_test}
+loss_test, acc_test = sess.run([loss, accuracy], feed_dict=feed_dict_test)
+print('---------------------------------------------------------')
+print("Test loss: {0:.2f}, test accuracy: {1:.01%}".format(loss_test, acc_test))
+print('---------------------------------------------------------')
