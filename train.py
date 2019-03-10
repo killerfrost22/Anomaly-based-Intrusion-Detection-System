@@ -7,7 +7,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 #img_h = img_w = 28             # MNIST images are 28x28
 #img_size_flat = img_h * img_w  # 28x28=784, the total number of pixels
 n_classes = 2                 # Number of classes, one class per digit
-n_feature = 40
+n_feature = 118
 
 def load_data():
     """
@@ -15,7 +15,7 @@ def load_data():
     :param mode: train or test
     :return: images and the corresponding labels
     """
-    df = pd.get_dummies(pd.read_csv('Train_data_cleaned-2.0.1.csv')).values
+    df = pd.get_dummies(pd.read_csv('Train_data.csv')).values
     N, D = df.shape
     N = int(N * 0.8)
     D -= 2
@@ -54,11 +54,11 @@ y_valid[:5, :]
 
 # Hyper-parameters
 epochs = 100             # Total number of training epochs
-batch_size = 100        # Training batch size
+batch_size = 5000        # Training batch size
 display_freq = 50      # Frequency of displaying the training results
 learning_rate = 0.001   # The optimization initial learning rate
 
-h1 = 200                # Number of units in the first hidden layer
+h1 = 20                # Number of units in the first hidden layer
 
 # weight and bais wrappers
 def weight_variable(name, shape):
@@ -68,7 +68,7 @@ def weight_variable(name, shape):
     :param shape: weight shape
     :return: initialized weight variable
     """
-    initer = tf.truncated_normal_initializer(stddev=0.01)
+    initer = tf.truncated_normal_initializer(stddev=0.3)
     return tf.get_variable('W_' + name,
                            dtype=tf.float32,
                            shape=shape,
@@ -127,6 +127,7 @@ sess = tf.InteractiveSession()
 sess.run(init)
 global_step = 0
 # Number of training iterations in each epoch
+batch_size = len(Y)
 num_tr_iter = int(len(Y) / batch_size)
 for epoch in range(epochs):
     print('Training epoch: {}'.format(epoch + 1))
